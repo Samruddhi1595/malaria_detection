@@ -8,11 +8,11 @@
 
 ## Sample Parasitized Cells
 
-![Parasitized Cells](visuals/Sample_Parasitized_cell.png)
+![Sample Parasitized Cells](visuals/Sample_Parasitized_cell.png)
 
 ## Sample Parasitized Cells
 
-![Parasitized Cells](visuals/Sample_Parasitized_cell2.png)
+![Sample Parasitized Cells](visuals/Sample_Parasitized_cell2.png)
 ##  Parasitized Cells
 
 ![Parasitized Cells](visuals/Parasitized.png)
