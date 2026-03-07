@@ -1,14 +1,14 @@
 ##  Parasitized Cells
 
-![Parasitized Cells](visuals/Parasitized_cells.png)
+![Parasitized Cells](visuals/Parasitized_cell.png)
 
 ## Dataset Class Distribution
 
-![Dataset Graph](visuals/Data_class_distribution.png)
+![Dataset Graph](visuals/Data_class_Distribution.png)
 
 ## Sample Parasitized Cells
 
-![Parasitized Cells](visuals/Sample_parasitized_cells.png)
+![Parasitized Cells](visuals/Sample_Parasitized_cell.png)
 
 ## Sample Parasitized Cells
 
