@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MalariaScope — Neural Diagnostic Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050810;
+      --surface: #0d1117;
+      --surface2: #131925;
+      --border: rgba(255,255,255,0.07);
+      --accent: #7c6aff;
+      --accent2: #a78bfa;
+      --green: #22c55e;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND GRID ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,106,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      background: rgba(5,8,16,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--green);
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* ── HERO ── */
+    #home {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 60px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--accent2);
+      background: rgba(124,106,255,0.1);
+      border: 1px solid rgba(124,106,255,0.25);
+      padding: 7px 16px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+      letter-spacing: 0.05em;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    h1.hero-title {
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    h1.hero-title span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2), #c4b5fd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 56px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 72px;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 160px;
+    }
+
+    .stat-icon { font-size: 1.6rem; }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 3px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── UPLOAD SECTION ── */
+    #upload-section {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px 100px;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── DROP ZONE ── */
+    .drop-zone {
+      border: 2px dashed rgba(124,106,255,0.35);
+      border-radius: 20px;
+      padding: 56px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(124,106,255,0.03);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124,106,255,0.08);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      width: 64px; height: 64px;
+      border: 2px solid rgba(124,106,255,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 1.6rem;
+      background: rgba(124,106,255,0.08);
+    }
+
+    .drop-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .drop-sub {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      margin-bottom: 20px;
+    }
+
+    .format-pills {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .pill {
+      background: rgba(124,106,255,0.15);
+      border: 1px solid rgba(124,106,255,0.3);
+      color: var(--accent2);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+
+    /* ── FILE PREVIEW ── */
+    .file-preview {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 16px;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .file-preview.show { display: flex; }
+
+    .preview-img-wrap {
+      width: 100%;
+      max-height: 280px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-img-wrap img {
+      max-width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .file-name { color: var(--text); font-weight: 700; }
+
+    /* ── ANALYZE BUTTON ── */
+    .analyze-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      letter-spacing: 0.02em;
+    }
+
+    .analyze-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(124,106,255,0.4);
+    }
+
+    .analyze-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESULT PAGE ── */
+    #result-page {
+      display: none;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 100px 24px 80px;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .result-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .result-timestamp {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 640px) {
+      .result-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── VERDICT CARD ── */
+    .verdict-card {
+      grid-column: 1 / -1;
+      border-radius: 20px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .verdict-card.uninfected {
+      background: rgba(34,197,94,0.06);
+      border-color: rgba(34,197,94,0.25);
+    }
+
+    .verdict-card.parasitized {
+      background: rgba(239,68,68,0.06);
+      border-color: rgba(239,68,68,0.25);
+    }
+
+    .verdict-icon-wrap {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+    }
+
+    .uninfected .verdict-icon-wrap { background: rgba(34,197,94,0.15); }
+    .parasitized .verdict-icon-wrap { background: rgba(239,68,68,0.15); }
+
+    .verdict-label {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .uninfected .verdict-label { color: var(--green); }
+    .parasitized .verdict-label { color: var(--red); }
+
+    .verdict-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ── CONFIDENCE CARD ── */
+    .confidence-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    .card-label {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .confidence-value {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+    }
+
+    .conf-bar-track {
+      height: 8px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 100px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .conf-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .conf-bar-fill.green { background: linear-gradient(90deg, #16a34a, var(--green)); }
+    .conf-bar-fill.red { background: linear-gradient(90deg, #b91c1c, var(--red)); }
+
+    .conf-scale {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    /* ── DETAILS CARD ── */
+    .details-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .detail-row:last-child { border-bottom: none; }
+    .detail-key { color: var(--muted); font-family: var(--font-mono); font-size: 0.75rem; }
+    .detail-val { font-weight: 700; }
+
+    /* ── DISCLAIMER CARD ── */
+    .disclaimer-card {
+      background: rgba(124,106,255,0.05);
+      border: 1px solid rgba(124,106,255,0.15);
+      border-radius: 20px;
+      padding: 24px 28px;
+      grid-column: 1 / -1;
+    }
+
+    .disclaimer-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent2);
+    }
+
+    .disclaimer-text {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      font-family: var(--font-mono);
+    }
+
+    /* ── NEW SCAN BUTTON ── */
+    .new-scan-btn {
+      margin-top: 28px;
+      padding: 14px 32px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .new-scan-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent2);
+      background: rgba(124,106,255,0.08);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 28px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeUp 0.5s ease both; }
+
+    /* ── ERROR TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e1e2e;
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 14px 24px;
+      border-radius: 12px;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🔬</div>
+      MalariaScope
+      <span style="font-size:0.65rem;color:var(--muted);font-family:var(--font-mono);font-weight:400;">Neural Diagnostic Platform</span>
+    </div>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      System Online
+    </div>
+  </nav>
+
+  <!-- HOME PAGE -->
+  <div id="home">
+
+    <div class="hero-badge">⚡ Powered by Deep Learning &amp; TensorFlow</div>
+
+    <h1 class="hero-title">
+      Revolutionary <span>AI-Powered</span><br/>Malaria Detection
+    </h1>
+
+    <p class="hero-sub">
+      Clinical-grade accuracy &nbsp;·&nbsp; Real-time analysis &nbsp;·&nbsp; Instant results
+    </p>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div>
+          <div class="stat-value">99.2%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div>
+          <div class="stat-value">&lt;3s</div>
+          <div class="stat-label">Analysis Time</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔬</div>
+        <div>
+          <div class="stat-value" id="scan-counter">2,852</div>
+          <div class="stat-label">Scans Today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPLOAD SECTION -->
+    <div id="upload-section">
+      <h2 class="section-title">Upload Blood Cell Image</h2>
+      <p class="section-sub">Drag &amp; drop or click to browse &nbsp;·&nbsp; Supports PNG, JPG, JPEG</p>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" />
+        <div class="drop-icon">⬆</div>
+        <div class="drop-title">Drop your microscopic image here</div>
+        <div class="drop-sub">or click to select from your device</div>
+        <div class="format-pills">
+          <span class="pill">PNG</span>
+          <span class="pill">JPG</span>
+          <span class="pill">JPEG</span>
+        </div>
+      </div>
+
+      <div class="file-preview" id="filePreview">
+        <div class="preview-img-wrap">
+          <img id="previewImg" src="" alt="Preview" />
+        </div>
+        <div class="file-info">
+          <span class="file-name" id="fileName">—</span>
+          <span id="fileSize">—</span>
+        </div>
+      </div>
+
+      <button class="analyze-btn" id="analyzeBtn" disabled>
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">🔍 Analyze Sample</span>
+      </button>
+    </div>
+
+  </div><!-- /#home -->
+
+  <!-- RESULT PAGE -->
+  <div id="result-page">
+    <div class="result-header">
+      <div class="result-title">📋 Diagnostic Report</div>
+      <div class="result-timestamp" id="resultTimestamp">—</div>
+    </div>
+
+    <div class="result-grid">
+
+      <!-- VERDICT -->
+      <div class="verdict-card" id="verdictCard">
+        <div class="verdict-icon-wrap" id="verdictIcon">—</div>
+        <div class="verdict-label" id="verdictLabel">—</div>
+        <div class="verdict-desc" id="verdictDesc">—</div>
+      </div>
+
+      <!-- CONFIDENCE -->
+      <div class="confidence-card">
+        <div class="card-label">Confidence Level</div>
+        <div class="confidence-value" id="confidenceValue">—</div>
+        <div class="conf-bar-track">
+          <div class="conf-bar-fill" id="confBar" style="width:0%"></div>
+        </div>
+        <div class="conf-scale">
+          <span>Low</span><span>Medium</span><span>High</span><span>Very High</span>
+        </div>
+      </div>
+
+      <!-- DETAILS -->
+      <div class="details-card">
+        <div class="card-label">Analysis Details</div>
+        <div class="detail-row">
+          <span class="detail-key">Model</span>
+          <span class="detail-val">CustomCNN v2.0</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Processing Time</span>
+          <span class="detail-val" id="procTime">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Image Quality</span>
+          <span class="detail-val">Excellent</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Parasitized Prob.</span>
+          <span class="detail-val" id="parasitizedProb">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Uninfected Prob.</span>
+          <span class="detail-val" id="uninfectedProb">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-key">Timestamp</span>
+          <span class="detail-val" id="detailTimestamp">—</span>
+        </div>
+      </div>
+
+      <!-- DISCLAIMER -->
+      <div class="disclaimer-card">
+        <div class="disclaimer-title">⚕ Medical Disclaimer</div>
+        <div class="disclaimer-text">
+          This AI system is a screening tool for healthcare professionals.
+          Results must be verified by qualified medical personnel.
+          Not a substitute for professional medical diagnosis.
+        </div>
+      </div>
+
+    </div>
+
+    <button class="new-scan-btn" id="newScanBtn">↩ Run New Analysis</button>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    © 2024 MalariaScope AI &nbsp;|&nbsp; Powered by Deep Learning &amp; TensorFlow &nbsp;|&nbsp; Saving Lives Through Technology
+  </footer>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const dropZone    = document.getElementById('dropZone');
+    const fileInput   = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const previewImg  = document.getElementById('previewImg');
+    const fileName    = document.getElementById('fileName');
+    const fileSize    = document.getElementById('fileSize');
+    const analyzeBtn  = document.getElementById('analyzeBtn');
+    const spinner     = document.getElementById('spinner');
+    const btnText     = document.getElementById('btnText');
+    const homePage    = document.getElementById('home');
+    const resultPage  = document.getElementById('result-page');
+    const toast       = document.getElementById('toast');
+
+    let selectedFile = null;
+
+    // Drag & Drop
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(f) {
+      selectedFile = f;
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        filePreview.classList.add('show');
+      };
+      reader.readAsDataURL(f);
+      fileName.textContent = f.name;
+      fileSize.textContent = (f.size / 1024).toFixed(2) + ' KB';
+      analyzeBtn.disabled = false;
+
+      // increment scan counter cosmetically
+      const counter = document.getElementById('scan-counter');
+      const current = parseInt(counter.textContent.replace(',', ''));
+      counter.textContent = (current + 1).toLocaleString();
+    }
+
+    // Analyze
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      spinner.style.display = 'block';
+      btnText.textContent = 'Analyzing...';
+      analyzeBtn.disabled = true;
+
+      const startTime = Date.now();
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const res = await fetch('/predict', { method: 'POST', body: formData });
+        const data = await res.json();
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
+
+        if (data.success) {
+          showResult(data, elapsed);
+        } else {
+          showToast('Error: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        showToast('Could not connect to server. Is app.py running?');
+      } finally {
+        spinner.style.display = 'none';
+        btnText.textContent = '🔍 Analyze Sample';
+        analyzeBtn.disabled = false;
+      }
+    });
+
+    function showResult(data, elapsed) {
+      const isParasitized = data.prediction === 'Parasitized';
+
+      // Verdict card
+      const card = document.getElementById('verdictCard');
+      card.className = 'verdict-card ' + (isParasitized ? 'parasitized' : 'uninfected');
+      document.getElementById('verdictIcon').textContent = isParasitized ? '⚠️' : '✅';
+      document.getElementById('verdictLabel').textContent = data.prediction.toUpperCase();
+      document.getElementById('verdictDesc').textContent = isParasitized
+        ? 'Malaria parasites detected'
+        : 'No malaria parasites detected';
+
+      // Confidence
+      document.getElementById('confidenceValue').textContent = data.confidence + '%';
+      const bar = document.getElementById('confBar');
+      bar.className = 'conf-bar-fill ' + (isParasitized ? 'red' : 'green');
+      setTimeout(() => { bar.style.width = data.confidence + '%'; }, 100);
+
+      // Details
+      document.getElementById('procTime').textContent = elapsed;
+      document.getElementById('parasitizedProb').textContent = data.details.parasitized_probability + '%';
+      document.getElementById('uninfectedProb').textContent = data.details.uninfected_probability + '%';
+      document.getElementById('detailTimestamp').textContent = data.timestamp;
+
+      // Headers
+      const ts = 'Generated: ' + data.timestamp;
+      document.getElementById('resultTimestamp').textContent = ts;
+      document.getElementById('detailTimestamp').textContent = data.timestamp;
+
+      // Switch pages
+      homePage.style.display = 'none';
+      resultPage.style.display = 'block';
+      resultPage.classList.add('fade-in');
+      window.scrollTo(0, 0);
+    }
+
+    document.getElementById('newScanBtn').addEventListener('click', () => {
+      homePage.style.display = 'flex';
+      resultPage.style.display = 'none';
+      filePreview.classList.remove('show');
+      fileInput.value = '';
+      selectedFile = null;
+      analyzeBtn.disabled = true;
+      document.getElementById('confBar').style.width = '0%';
+      window.scrollTo(0, 0);
+    });
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+  </script>
+</body>
+</html>
